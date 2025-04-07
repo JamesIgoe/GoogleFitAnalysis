@@ -1,0 +1,89 @@
+import pandas as pd
+import numpy as np # Often needed for more complex aggregations or handling NaNs
+import os
+
+# --- 1. Define variables ---
+input_fileName = '2025-05-06 Daily Details.csv'
+output_fileName = '2025-05-06 Daily Summary.csv'
+os_name = os.sys.platform
+
+if os_name == 'darwin':
+    base = '/Users/igoeja/Documents/GitHub/DataAnalytics/Data/'
+else:
+    base = 'c:\\Users\\igoej\\OneDrive\\Documents\\GitHub\\DataAnalytics\\Data\\'
+
+input_filePath = os.path.join(base, input_fileName)
+output_filePath = os.path.join(base, output_fileName)
+
+
+# --- 2. Get data ---
+df_raw = pd.read_csv(input_filePath)
+df_raw.tail()  # Display the last few rows of the DataFrame to understand its structure
+
+
+# --- 3. Define Aggregation Rules ---
+# Create a dictionary where keys are the column names and values are the
+# aggregation functions ('sum', 'mean', 'max', 'min').
+aggregation_rules = {
+    'Move Minutes count': 'sum',
+    'Average blood glucose (mmol/L)': 'mean',
+    'Max blood glucose (mmol/L)': 'max',
+    'Min blood glucose (mmol/L)': 'min',
+    'Average systolic blood pressure (mmHg)': 'mean',
+    'Max systolic blood pressure (mmHg)': 'max',    
+    'Min systolic blood pressure (mmHg)': 'min',    
+    'Average diastolic blood pressure (mmHg)': 'mean',
+    'Max diastolic blood pressure (mmHg)': 'max',   
+    'Min diastolic blood pressure (mmHg)': 'min',   
+    'Calories (kcal)': 'sum',
+    'Distance (m)': 'sum',
+    'Heart Points': 'sum',
+    'Heart Minutes': 'sum',
+    'Average heart rate (bpm)': 'mean',
+    'Max heart rate (bpm)': 'max',
+    'Min heart rate (bpm)': 'min',
+    'Average speed (m/s)': 'mean',
+    'Max speed (m/s)': 'max',     
+    'Min speed (m/s)': 'min',     
+    'Step count': 'sum',
+    'Average weight (kg)': 'mean',
+    'Max weight (kg)': 'max',
+    'Min weight (kg)': 'min',
+    'Biking duration (ms)': 'sum',
+    'Inactive duration (ms)': 'sum',
+    'Unknown duration (ms)': 'sum',
+    'Walking duration (ms)': 'sum',
+    'Running duration (ms)': 'sum',
+    'Basketball duration (ms)': 'sum',
+    'Stationary biking duration (ms)': 'sum',
+    'Elliptical duration (ms)': 'sum',
+    'Rowing duration (ms)': 'sum',
+    'Rowing machine duration (ms)': 'sum',
+    'Treadmill running duration (ms)': 'sum',
+    'Cross - country skiing duration (ms)': 'sum',
+    'Stair climbing machine duration (ms)': 'sum',
+    'Strength training duration (ms)': 'sum',
+    'Ergometer duration (ms)': 'sum',
+    'Other duration (ms)': 'sum'
+}
+
+# --- 3. Filter rules for columns that actually exist in the DataFrame ---
+# This prevents errors if your DataFrame doesn't have all the columns listed in the image.
+existing_columns = df_raw.columns
+filtered_aggregation_rules = {col: agg_func for col, agg_func in aggregation_rules.items() if col in existing_columns}
+
+# --- 4. Perform GroupBy and Aggregation ---
+# Group by the 'Date' column and apply the specified aggregations.
+# The `.agg()` method takes the dictionary of rules.
+# Using `as_index=False` keeps 'Date' as a regular column instead of making it the index.
+grouped_df = df_raw.groupby('Date', as_index=False).agg(filtered_aggregation_rules)
+grouped_df.tail()  # Display the last few rows of the grouped DataFrame
+
+# If you prefer 'Date' as the index, you can omit `as_index=False`:
+# grouped_df = df.groupby('Date').agg(filtered_aggregation_rules)
+# Or use reset_index() after grouping:
+# grouped_df = df_raw.groupby('Date').agg(filtered_aggregation_rules).reset_index()
+
+# --- 5. Display the Result ---
+grouped_df.to_csv(output_filePath, index=False)
+print(output_fileName, "created successfully!")
